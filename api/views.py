@@ -7,10 +7,17 @@ from rest_framework.authtoken.models import Token
 from rest_framework import permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import authenticate  # 🔥 IMPORTANTE
+from django.contrib.auth import authenticate
+from django.http import HttpResponse  # ✅ Para la vista de bienvenida
 
 from .models import *
 from .serializers import *
+
+# -------------------------------
+# VISTA DE BIENVENIDA
+# -------------------------------
+def vista_inicio(request):
+    return HttpResponse("<h2>🎉 Bienvenido a la API de PetCare 🐾</h2><p>La API está corriendo correctamente.</p>")
 
 # -------------------------------
 # CRUD ViewSets protegidos por token
@@ -171,6 +178,10 @@ class HistoriasPorMascotaView(APIView):
         serializer = HistoriaMedicaSerializer(historias, many=True)
         return Response(serializer.data)
 
+# -------------------------------
+# Vista para cambiar la contraseña
+# -------------------------------
+
 class CambiarPasswordView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -187,14 +198,10 @@ class CambiarPasswordView(APIView):
         if nueva != confirmar:
             return Response({'error': 'La nueva contraseña y la confirmación no coinciden'}, status=400)
 
-        # Cambiar la contraseña
         user.set_password(nueva)
         user.save()
 
-        # Eliminar el token anterior
         Token.objects.filter(user=user).delete()
-
-        # Crear nuevo token
         nuevo_token = Token.objects.create(user=user)
 
         return Response({

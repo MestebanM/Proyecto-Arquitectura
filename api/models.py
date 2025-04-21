@@ -57,3 +57,34 @@ class Recordatorio(models.Model):
 
     def __str__(self):
         return f"Recordatorio para {self.mascota.nombre} el {self.fecha.strftime('%Y-%m-%d %H:%M')}"
+    
+class EventoMascota(models.Model):
+    TIPO_EVENTO = [
+        ('paseo', 'Paseo'),
+        ('alimentacion', 'Alimentación'),
+        ('juego', 'Juego'),
+        ('baño', 'Baño'),
+        ('vacuna', 'Vacuna'),
+        ('otro', 'Otro'),
+    ]
+
+    mascota = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='eventos')
+    tipo = models.CharField(max_length=20, choices=TIPO_EVENTO)
+    descripcion = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    duracion_min = models.PositiveIntegerField(null=True, blank=True)  # opcional, para recorridos o paseos
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.mascota.nombre} ({self.fecha.strftime('%Y-%m-%d %H:%M')})"
+
+
+class RecorridoMascota(models.Model):
+    mascota = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='recorridos')
+    distancia_metros = models.PositiveIntegerField()  # ej. 1200 metros
+    duracion_minutos = models.PositiveIntegerField()  # ej. 30 minutos
+    fecha = models.DateTimeField(auto_now_add=True)
+    notas = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.mascota.nombre} - {self.distancia_metros} m - {self.fecha.strftime('%Y-%m-%d')}"
+

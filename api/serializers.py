@@ -57,3 +57,19 @@ class RecordatorioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recordatorio
         fields = ['id', 'mascota', 'mensaje', 'fecha', 'nombre_mascota']
+
+class EventoMascotaSerializer(serializers.ModelSerializer):
+    nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)
+
+    class Meta:
+        model = EventoMascota
+        fields = ['id', 'mascota', 'tipo', 'descripcion', 'fecha', 'duracion_min', 'nombre_mascota']
+
+
+class RecorridoMascotaSerializer(serializers.ModelSerializer):
+    nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)
+
+    class Meta:
+        model = RecorridoMascota
+        fields = ['id', 'mascota', 'distancia_metros', 'duracion_minutos', 'fecha', 'notas', 'nombre_mascota']
+

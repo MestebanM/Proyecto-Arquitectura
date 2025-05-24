@@ -65,6 +65,26 @@ class EventoMascotaSerializer(serializers.ModelSerializer):
         model = EventoMascota
         fields = ['id', 'mascota', 'tipo', 'descripcion', 'fecha', 'duracion_min', 'nombre_mascota']
 
+class CitaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cita
+        fields = '__all__'
+
+class ChatSerializer(serializers.ModelSerializer):
+    usuario1 = UsuarioSerializer(read_only=True)
+    usuario2 = UsuarioSerializer(read_only=True)
+
+    class Meta:
+        model = Chat
+        fields = ['id', 'usuario1', 'usuario2', 'creado']
+
+class MensajeSerializer(serializers.ModelSerializer):
+    emisor_username = serializers.CharField(source='emisor.username', read_only=True)
+    fecha_envio = serializers.DateTimeField(source='enviado_en', read_only=True)
+
+    class Meta:
+        model = Mensaje
+        fields = ['id', 'chat', 'emisor', 'emisor_username', 'contenido', 'fecha_envio']
 
 class RecorridoMascotaSerializer(serializers.ModelSerializer):
     nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)

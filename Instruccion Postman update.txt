@@ -1,0 +1,602 @@
+
+🧪 INSTRUCCIONES PARA PROBAR LA API REST PETCARE EN POSTMAN
+
+============================================
+✅ Requisitos previos:
+============================================
+
+1. Tener Python y Django instalados.
+2. Ejecutar migraciones:
+   python manage.py migrate
+3. Iniciar el servidor:
+   python manage.py runserver
+4. Tener Postman instalado.
+
+============================================
+🔐 1. REGISTRO de usuarios (`dueño`, `veterinario`, `cuidador`)
+============================================
+POST http://localhost:8000/api/registro/
+Body (JSON):
+{
+  "username": "usuario1",
+  "email": "usuario1@example.com",
+  "password": "12345678",
+  "tipo": "dueño"
+}
+
+============================================
+🔐 2. LOGIN de usuarios
+============================================
+POST http://localhost:8000/api/login/
+Body (JSON):
+{
+  "username": "usuario1",
+  "password": "12345678"
+}
+➡️ Guarda el token de la respuesta. Lo usarás en las siguientes consultas como Header:
+Key: Authorization
+Value: Token tu_token_aqui
+
+============================================
+👤 3. ACTUALIZAR USUARIO
+============================================
+PUT http://localhost:8000/api/actualizar-usuario/
+Headers: Authorization Token
+Body (JSON):
+{
+  "email": "nuevoemail@example.com"
+}
+
+============================================
+🔑 4. CAMBIAR CONTRASEÑA
+============================================
+PUT http://localhost:8000/api/cambiar-password/
+Headers: Authorization Token
+Body (JSON):
+{
+  "password_actual": "12345678",
+  "nueva_password": "nueva1234",
+  "confirmar_password": "nueva1234"
+}
+
+============================================
+🐶 5. REGISTRAR MASCOTA (solo dueños)
+============================================
+POST http://localhost:8000/api/mascotas/
+Headers: Authorization Token
+Body (JSON):
+{
+  "nombre": "Firulais",
+  "especie": "Perro",
+  "cuidador": 2
+}
+
+============================================
+🐶 6. LISTAR MASCOTAS
+============================================
+GET http://localhost:8000/api/mascotas/
+Headers: Authorization Token
+
+============================================
+📋 7. REGISTRAR HISTORIA MÉDICA (solo veterinarios)
+============================================
+POST http://localhost:8000/api/historias/
+Headers: Authorization Token
+Body (JSON):
+{
+  "mascota": 1,
+  "veterinario": 3,
+  "descripcion": "Revisión general"
+}
+
+============================================
+📋 8. VER HISTORIAS POR MASCOTA (solo veterinarios)
+============================================
+GET http://localhost:8000/api/historias/mascota/1/
+Headers: Authorization Token
+
+============================================
+💉 9. REGISTRAR VACUNA (solo veterinario)
+============================================
+POST http://localhost:8000/api/vacunas/
+Headers: Authorization Token
+Body (JSON):
+{
+  "historia": 1,
+  "nombre": "Vacuna Rabia",
+  "fecha": "2025-04-18"
+}
+
+============================================
+💉 10. VER VACUNAS
+============================================
+GET http://localhost:8000/api/vacunas/
+Headers: Authorization Token
+
+============================================
+🔔 11. REGISTRAR RECORDATORIO (solo dueños)
+============================================
+POST http://localhost:8000/api/recordatorios/
+Headers: Authorization Token
+Body (JSON):
+{
+  "mascota": 1,
+  "mensaje": "Revisión médica el lunes",
+  "fecha": "2025-04-21T10:00:00"
+}
+
+============================================
+🔔 12. VER RECORDATORIOS
+============================================
+GET http://localhost:8000/api/recordatorios/
+Headers: Authorization Token
+
+============================================
+🏥 13. CRUD VETERINARIAS
+============================================
+GET http://localhost:8000/api/veterinarias/
+Headers: Authorization Token
+
+============================================
+📌 Notas:
+============================================
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+
+============================================
+🏥 14. CRUD VETERINARIAS
+============================================
+POST http://localhost:8000/api/veterinarias/
+Headers: Authorization Token
+
+{
+  "nombre": "Clínica MiVetPlus"
+}
+
+============================================
+📌 Notas:
+============================================
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+
+============================================
+🏥 15. CRUD VETERINARIAS
+============================================
+PUT http://localhost:8000/api/veterinarias/#/
+Headers: Authorization Token
+
+{
+  "nombre": "Clínica MiVetPlus"
+}
+
+
+============================================
+📌 Notas:
+============================================
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+
+============================================
+🏥 13. CRUD VETERINARIAS
+============================================
+DELETE http://localhost:8000/api/veterinarias/1/
+Headers: Authorization Token
+
+============================================
+📌 Notas:
+============================================
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+👤 17. VER PERFIL Y MASCOTAS (Dueño)
+============================================
+
+GET http://localhost:8000/api/mi-perfil/
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🧑‍💻 18. CRUD USUARIOS (solo superusuario)
+============================================
+
+GET http://localhost:8000/api/usuarios/
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🧑‍💻 19. CRUD USUARIOS (solo superusuario)
+============================================
+
+DELETE http://localhost:8000/api/usuarios/5/
+
+
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🧑‍💻 20. CRUD USUARIOS (solo superusuario)
+============================================
+
+POST http://localhost:8000/api/usuarios/
+
+{
+  "username": "nuevo_usuario",
+  "email": "nuevo@example.com",
+  "password": "12345678",
+  "tipo": "cuidador",
+  "veterinaria": 1
+}
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🧑‍💻 21.CRUD USUARIOS(solo superusuario)
+============================================
+
+PUT http://localhost:8000/api/usuarios/5/
+
+{
+  
+  "username": "nuevo_usuario",
+  "email": "nuevoemail@example.com",
+  "password": "12345678",
+  "tipo": "dueño"
+}
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🧹 🔥 22. Eliminar cuenta del usuario autenticado y todo lo relacionado (SEGUN LA CUENTA DEL TOKEN)
+============================================
+
+DELETE http://localhost:8000/api/eliminar-cuenta/
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🩺 👨‍⚕️ 23. Obtener mascotas atendidas por un veterinario (SOLO VETERINARIO)
+============================================
+
+GET http://localhost:8000/api/mascotas-atendidas/
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🏥👨‍⚕️ 24. Obtener veterinarios por clínica (no necesita token, cualquiera puede mirar)
+============================================
+
+GET http://localhost:8000/api/veterinarios-por-clinica/?clinica=MiVetPlus
+
+============================================
+🏥 📋 25. Obtener clínicas disponibles(no necesita token, cualquiera puede mirar)
+============================================
+
+GET http://localhost:8000/api/clinicas-disponibles/
+
+============================================
+💉 🐾 26. Obtener vacunas de una mascota específica (duenio y cuidador)
+============================================
+
+GET http://localhost:8000/api/vacunas/mascota/1/
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🆕 💉 27: Agregar vacuna a una mascota  (veterinarioo)
+============================================
+
+POST http://localhost:8000/api/vacunas/agregar-directo/
+
+{
+  "mascota": 1,
+  "nombre": "Vacuna Triple",
+  "fecha": "2025-04-22",
+  "descripcion": "Aplicación directa de vacuna triple"
+}
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+📝 🐶 28: Actualizar información de una mascota (duenio)
+============================================
+
+PUT http://localhost:8000/api/mascotas/actualizar/1/
+
+{
+  "nombre": "Nina",
+  "especie": "Gato"
+}
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🐾 🔍 29: Obtener mascotas por usuario (veterinarioo)
+============================================
+
+GET http://localhost:8000/api/mascotas/usuario/1/
+
+- Verifica los IDs de usuarios, mascotas y roles al relacionar.
+- Usar Authorization: Token tu_token_aqui en cada consulta protegida.
+
+============================================
+🐶📅 30: CRUD de Eventos de Mascota (paseo, alimentación, juegos, etc.)
+============================================
+
+POST http://localhost:8000/api/eventos/
+
+{
+  "mascota": 1,
+  "tipo": "paseo",
+  "descripcion": "Caminata larga en el parque",
+  "duracion_min": 40
+}
+Requisitos:
+Solo el dueño o cuidador de la mascota puede crear, ver, editar o eliminar eventos.
+
+Es necesario tener una mascota previamente registrada (verifica su ID).
+
+============================================
+🐶📅 31: CRUD de Eventos de Mascota (paseo, alimentación, juegos, etc.)
+============================================
+
+GET http://localhost:8000/api/eventos/
+
+Requisitos:
+Solo el dueño o cuidador de la mascota puede crear, ver, editar o eliminar eventos.
+
+Es necesario tener una mascota previamente registrada (verifica su ID).
+============================================
+🐶📅 32: CRUD de Eventos de Mascota (paseo, alimentación, juegos, etc.)
+============================================
+
+PUT http://localhost:8000/api/eventos/4/
+
+{
+  "mascota": 1,
+  "tipo": "alimentacion",
+  "descripcion": "Comida balanceada con croquetas",
+  "duracion_min": 10
+}
+
+Requisitos:
+Solo el dueño o cuidador de la mascota puede crear, ver, editar o eliminar eventos.
+
+Es necesario tener una mascota previamente registrada (verifica su ID).
+============================================
+🐶📅 33: CRUD de Eventos de Mascota (paseo, alimentación, juegos, etc.)
+============================================
+
+DELETE http://localhost:8000/api/eventos/4/
+
+Requisitos:
+Solo el dueño o cuidador de la mascota puede crear, ver, editar o eliminar eventos.
+
+Es necesario tener una mascota previamente registrada (verifica su ID).
+
+============================================
+🧾 🐶 34: Obtener historial consolidado de una mascota
+============================================
+
+ http://localhost:8000/api/mascotas/historial/1/
+
+ Objetivo
+Permitir que el dueño o cuidador vea el historial completo de actividades/eventos de su mascota.
+
+============================================
+📊 🐾 35: Obtener estadísticas de eventos de una mascota (por fechas)
+============================================
+
+GET http://localhost:8000/api/mascotas/estadisticas/1/
+
+Authorization: Token tu_token_de_dueño_o_cuidador
+
+============================================
+🐾📍 36: CRUD de Recorrido de Mascota 
+============================================
+
+POST http://localhost:8000/api/recorridos/
+
+{
+  "mascota": 1,
+  "distancia_metros": 1200,
+  "duracion_minutos": 35,
+  "notas": "Paseo tranquilo por el barrio"
+}
+
+
+============================================
+🐾📍 37: CRUD de Recorrido de Mascota 
+============================================
+
+GET http://localhost:8000/api/recorridos/
+
+Filtro por mascota:
+GET http://localhost:8000/api/recorridos/?mascota=1
+
+
+============================================
+🐾📍 38: CRUD de Recorrido de Mascota 
+============================================
+
+PUT http://localhost:8000/api/recorridos/5/
+
+{
+  "mascota": 1,
+  "distancia_metros": 1500,
+  "duracion_minutos": 40,
+  "notas": "Ruta más larga por el parque"
+}
+
+============================================
+🐾📍 39: CRUD de Recorrido de Mascota 
+============================================
+
+DELETE http://localhost:8000/api/recorridos/5/
+
+
+============================================
+💉📆 40: Número total de vacunas aplicadas a una mascota (por rango de fechas)
+============================================
+
+GET http://localhost:8000/api/vacunas/total-por-fecha/1/
+
+Authorization: Token tu_token_de_dueño_o_cuidador_o_veterinario
+
+============================================
+🧑‍⚕️📅 41: Número de visitas al veterinario de una mascota
+============================================
+
+GET http://localhost:8000/api/mascotas/visitas-veterinario/1/
+
+Authorization: Token tu_token_de_dueño_o_cuidador_o_veterinario
+
+============================================
+🧾📊 42: Consolidado de eventos de mascota por tipo
+============================================
+
+GET http://localhost:8000/api/mascotas/consolidado-eventos/1/
+
+Authorization: Token tu_token_de_dueño_o_cuidador
+
+============================================
+📏 🐾 43: Promedio de recorrido diario de una mascota
+============================================
+
+GET http://localhost:8000/api/mascotas/promedio-recorrido/1/
+
+Authorization: Token tu_token_de_dueño_o_cuidador
+
+============================================
+🆔 44: Obtener detalles de un usuario (solo superusuario)
+============================================
+GET http://localhost:8000/api/usuarios/1/detalle/
+Headers:
+Authorization: Token token_superusuario
+
+============================================
+👨‍⚕️ 45: Ver lista general de veterinarios
+============================================
+GET http://localhost:8000/api/veterinarios/
+Headers:
+Authorization: Token token_cualquiera
+
+============================================
+🧑‍⚕️ 46: Ver lista general de cuidadores
+============================================
+GET http://localhost:8000/api/cuidadores/
+Headers:
+Authorization: Token token_cualquiera
+
+============================================
+👨‍👩‍👧‍👦 47: Ver lista general de dueños
+============================================
+GET http://localhost:8000/api/duenos/
+Headers:
+Authorization: Token token_cualquiera
+
+============================================
+🧾 📋 48: Ver historias médicas de un veterinario
+============================================
+GET http://localhost:8000/api/historias/veterinario/3/
+Headers:
+Authorization: Token token_veterinario
+
+============================================
+🧾 🐶 49: Ver historias de una mascota atendida por un veterinario específico
+============================================
+GET http://localhost:8000/api/historias/veterinario/3/mascota/1/
+Headers:
+Authorization: Token token_veterinario
+
+============================================
+📆 🕒 50: Verificar disponibilidad para cita
+============================================
+POST http://localhost:8000/api/citas/verificar/
+Headers:
+Authorization: Token token_dueño
+Body (JSON):
+{
+  "veterinario": 3,
+  "fecha": "2025-06-01",
+  "hora": "10:00"
+}
+
+============================================
+📅 🐶 51: Crear cita
+============================================
+POST http://localhost:8000/api/citas/crear/
+Headers:
+Authorization: Token token_dueño
+Body (JSON):
+{
+  "mascota": 1,
+  "veterinario": 3,
+  "fecha": "2025-06-01",
+  "hora": "10:00",
+  "historia": 1
+}
+
+============================================
+📆 ✅ 52: Ver citas del veterinario por fecha
+============================================
+GET http://localhost:8000/api/citas/veterinario/?veterinario=3&fecha=2025-06-01
+Headers:
+Authorization: Token token_veterinario
+
+============================================
+⛔️ ✅ 53: Actualizar estado de una cita
+============================================
+PUT http://localhost:8000/api/citas/5/estado/
+Headers:
+Authorization: Token token_veterinario
+Body (JSON):
+{
+  "estado": "realizada"
+}
+
+============================================
+💬 👥 54: Listar chats del usuario autenticado
+============================================
+GET http://localhost:8000/api/chats/
+Headers:
+Authorization: Token token_usuario
+
+============================================
+💬 ✉️ 55: Crear u obtener chat entre dos usuarios
+============================================
+POST http://localhost:8000/api/chats/crear/
+Headers:
+Authorization: Token token_usuario1
+Body (JSON):
+{
+  "otro_usuario_id": 3
+}
+
+============================================
+💬 📩 56: Ver mensajes de un chat
+============================================
+GET http://localhost:8000/api/chats/1/mensajes/
+Headers:
+Authorization: Token token_usuario1_o_2
+
+============================================
+💬 📝 57: Enviar mensaje a un chat
+============================================
+POST http://localhost:8000/api/chats/1/mensajes/enviar/
+Headers:
+Authorization: Token token_usuario1_o_2
+Body (JSON):
+{
+  "contenido": "Hola, ¿cómo estás?"
+}

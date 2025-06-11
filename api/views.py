@@ -89,13 +89,16 @@ class VacunaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.tipo == 'veterinario':
+        if user.is_superuser:
+            return Vacuna.objects.all()
+        elif user.tipo == 'veterinario':
             return Vacuna.objects.filter(historia__veterinario=user)
         elif user.tipo == 'dueño':
             return Vacuna.objects.filter(historia__mascota__dueño=user)
         elif user.tipo == 'cuidador':
             return Vacuna.objects.filter(historia__mascota__cuidador=user)
         return Vacuna.objects.none()
+
 
 class RecordatorioViewSet(viewsets.ModelViewSet):
     serializer_class = RecordatorioSerializer
@@ -180,9 +183,11 @@ class HistoriasPorMascotaView(APIView):
         if user.tipo != 'veterinario':
             return Response({'error': 'Solo los veterinarios pueden acceder a este recurso'}, status=403)
 
-        historias = HistoriaMedica.objects.filter(mascota__id=mascota_id, veterinario=user)
+        # 🔁 Cambiado: ya no filtramos por veterinario
+        historias = HistoriaMedica.objects.filter(mascota__id=mascota_id)
         serializer = HistoriaMedicaSerializer(historias, many=True)
         return Response(serializer.data)
+
 
 # -------------------------------
 # Vista para cambiar la contraseña
@@ -352,18 +357,14 @@ class HistoriasPorVeterinarioView(APIView):
     def get(self, request, vet_id):
         user = request.user
 
-        # Validar acceso
-        if not (user.is_superuser or (user.tipo == 'veterinario' and user.id == vet_id)):
+        # Permite acceso solo si es el veterinario o superusuario
+        if not (user.is_superuser or user.tipo == 'veterinario' and user.id == vet_id):
             return Response({'error': 'No tienes permiso para acceder a esta información.'}, status=403)
 
-        try:
-            veterinario = Usuario.objects.get(id=vet_id, tipo='veterinario')
-        except Usuario.DoesNotExist:
-            return Response({'error': 'Veterinario no encontrado'}, status=404)
-
-        historias = HistoriaMedica.objects.filter(veterinario=veterinario)
+        historias = HistoriaMedica.objects.filter(veterinario__id=vet_id)
         serializer = HistoriaMedicaSerializer(historias, many=True)
         return Response(serializer.data, status=200)
+
 
 class HistoriasPorVeterinarioYMascoView(APIView):
     permission_classes = [IsAuthenticated]
@@ -372,20 +373,13 @@ class HistoriasPorVeterinarioYMascoView(APIView):
     def get(self, request, vet_id, mascota_id):
         user = request.user
 
-        if not (user.is_superuser or (user.tipo == 'veterinario' and user.id == vet_id)):
+        if not (user.is_superuser or user.tipo == 'veterinario' and user.id == vet_id):
             return Response({'error': 'No tienes permiso para acceder a esta información.'}, status=403)
 
-        try:
-            veterinario = Usuario.objects.get(id=vet_id, tipo='veterinario')
-        except Usuario.DoesNotExist:
-            return Response({'error': 'Veterinario no encontrado'}, status=404)
-
-        try:
-            mascota = Mascota.objects.get(id=mascota_id)
-        except Mascota.DoesNotExist:
-            return Response({'error': 'Mascota no encontrada'}, status=404)
-
-        historias = HistoriaMedica.objects.filter(veterinario=veterinario, mascota=mascota)
+        historias = HistoriaMedica.objects.filter(
+            veterinario__id=vet_id,
+            mascota__id=mascota_id
+        )
         serializer = HistoriaMedicaSerializer(historias, many=True)
         return Response(serializer.data, status=200)
 
@@ -416,7 +410,7 @@ class VerificarDisponibilidadCitaView(APIView):
         return Response({'disponible': True, 'mensaje': 'El horario está disponible'}, status=200)
 
 class CrearCitaView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes    = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
     def post(self, request):
@@ -425,24 +419,24 @@ class CrearCitaView(APIView):
         if user.tipo not in ['dueño', 'veterinario']:
             return Response({'error': 'Solo dueños o veterinarios pueden agendar citas'}, status=403)
 
-        data = request.data
-        dueno_id = data.get('dueno')
-        mascota_id = data.get('mascota')
+        # Ya no pedimos dueno en payload, lo tomamos de request.user
+        dueno     = user
+        data      = request.data
+        mascota_id   = data.get('mascota')
         veterinario_id = data.get('veterinario')
-        fecha = data.get('fecha')
-        hora = data.get('hora')
+        fecha     = data.get('fecha')
+        hora      = data.get('hora')
 
         # Validar campos
-        if not all([dueno_id, mascota_id, veterinario_id, fecha, hora]):
+        if not all([mascota_id, veterinario_id, fecha, hora]):
             return Response({'error': 'Faltan datos obligatorios'}, status=400)
 
         # Validar existencia
         try:
-            dueno = Usuario.objects.get(id=dueno_id, tipo='dueño')
-            mascota = Mascota.objects.get(id=mascota_id, dueño=dueno)
+            mascota     = Mascota.objects.get(id=mascota_id, dueño=dueno)
             veterinario = Usuario.objects.get(id=veterinario_id, tipo='veterinario')
         except Usuario.DoesNotExist:
-            return Response({'error': 'Dueño o veterinario no válidos'}, status=404)
+            return Response({'error': 'Veterinario no válido'}, status=404)
         except Mascota.DoesNotExist:
             return Response({'error': 'Mascota no encontrada para el dueño'}, status=404)
 
@@ -454,7 +448,7 @@ class CrearCitaView(APIView):
         historia = HistoriaMedica.objects.create(
             mascota=mascota,
             veterinario=veterinario,
-            descripcion=f'Cita agendada por {user.username}'
+            descripcion=f'Cita agendada por {dueno.username}'
         )
 
         # Crear cita
@@ -468,8 +462,8 @@ class CrearCitaView(APIView):
         )
 
         return Response({
-            'mensaje': 'Cita creada correctamente',
-            'cita_id': cita.id,
+            'mensaje':     'Cita creada correctamente',
+            'cita_id':     cita.id,
             'historia_id': historia.id
         }, status=201)
 
@@ -1305,3 +1299,82 @@ class PromedioRecorridoDiarioView(APIView):
             "total_distancia_metros": total_distancia,
             "promedio_diario_metros": promedio
         }, status=200)
+    
+
+class IsOwner(permissions.BasePermission):
+    """Permite leer / modificar solo si el objeto pertenece al usuario."""
+    def has_object_permission(self, request, view, obj):
+        return getattr(obj, 'usuario', None) == request.user
+
+
+class DireccionViewSet(viewsets.ModelViewSet):
+    serializer_class = DireccionSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        return Direccion.objects.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
+
+
+class HorarioNoDisponibleViewSet(viewsets.ModelViewSet):
+    serializer_class = HorarioNoDisponibleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Solo sus propios horarios
+        return HorarioNoDisponible.objects.filter(veterinario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(veterinario=self.request.user)
+
+
+class ControlFisicoViewSet(viewsets.ModelViewSet):
+    serializer_class = ControlFisicoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        • Dueño: solo sus mascotas  
+        • Veterinario/Cuidador: cualquiera de sus mascotas atendidas/asignadas  
+        Para simplificar, devolvemos controles donde el usuario sea dueño **o**
+        la mascota tenga historial con él. Ajusta la lógica si necesitas reglas
+        más estrictas.
+        """
+        user = self.request.user
+        qs = ControlFisico.objects.filter(mascota__dueño=user)
+        if user.tipo == 'veterinario':
+            qs |= ControlFisico.objects.filter(
+                mascota__historias__veterinario=user).distinct()
+        if user.tipo == 'cuidador':
+            qs |= ControlFisico.objects.filter(mascota__cuidador=user).distinct()
+        return qs
+
+
+class HistorialServicioViewSet(viewsets.ModelViewSet):
+    serializer_class = HistorialServicioSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # dueño ve solo su mascota; cuidador ve lo suyo
+        if user.tipo == 'cuidador':
+            return HistorialServicio.objects.filter(cuidador=user)
+        return HistorialServicio.objects.filter(mascota__dueño=user)
+
+    def perform_create(self, serializer):
+        # el cuidador que lo registra queda grabado automáticamente
+        serializer.save(cuidador=self.request.user)
+
+
+class PaseoProgramadoViewSet(viewsets.ModelViewSet):
+    serializer_class = PaseoProgramadoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return PaseoProgramado.objects.filter(mascota__dueño=user)
+
+    def perform_create(self, serializer):
+        serializer.save()   # dueño pasa mascota en el payload   

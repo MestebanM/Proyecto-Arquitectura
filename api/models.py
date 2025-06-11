@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 class Veterinaria(models.Model):
@@ -131,3 +132,68 @@ class RecorridoMascota(models.Model):
 
     def __str__(self):
         return f"{self.mascota.nombre} - {self.distancia_metros} m - {self.fecha.strftime('%Y-%m-%d')}"
+
+class Direccion(models.Model):
+    usuario    = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                   related_name='direcciones')
+    nombre     = models.CharField(max_length=80)
+    direccion  = models.CharField(max_length=150)
+    latitud    = models.FloatField()
+    longitud   = models.FloatField()
+    creado_en  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.usuario.username})"
+
+
+class HorarioNoDisponible(models.Model):
+    veterinario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                    limit_choices_to={'tipo': 'veterinario'},
+                                    related_name='horarios_no_disponibles')
+    fecha       = models.DateField()
+    hora_inicio = models.TimeField()
+    hora_fin    = models.TimeField()
+
+    class Meta:
+        unique_together = ('veterinario', 'fecha', 'hora_inicio', 'hora_fin')
+
+    def __str__(self):
+        return f"{self.veterinario.username} {self.fecha} {self.hora_inicio}-{self.hora_fin}"
+
+
+class ControlFisico(models.Model):
+    mascota = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='controles_fisicos')
+    fecha   = models.DateField()                # se usa como “id natural”
+    peso    = models.CharField(max_length=15)   # p. ej. 4.5 kg
+    talla   = models.CharField(max_length=15)   # p. ej. 35 cm
+
+    class Meta:
+        unique_together = ('mascota', 'fecha')
+
+    def __str__(self):
+        return f"{self.mascota.nombre} - {self.fecha}"
+
+
+class HistorialServicio(models.Model):
+    mascota     = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='historial_servicios')
+    cuidador    = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                    limit_choices_to={'tipo': 'cuidador'},
+                                    related_name='servicios_realizados')
+    tipo        = models.CharField(max_length=30)          # libre: paseo, baño, etc.
+    comentario  = models.TextField(blank=True)
+    fecha       = models.DateField()
+    creado_en   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.tipo} - {self.mascota.nombre} ({self.fecha})"
+
+
+class PaseoProgramado(models.Model):
+    mascota     = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='paseos_programados')
+    nombre      = models.CharField(max_length=80)
+    latitudes   = models.JSONField()   # lista de floats
+    longitudes  = models.JSONField()
+    creado_en   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.mascota.nombre})"

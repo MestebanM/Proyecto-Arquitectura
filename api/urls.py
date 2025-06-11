@@ -11,6 +11,12 @@ router.register('recordatorios', RecordatorioViewSet, basename='recordatorio')
 router.register('veterinarias', VeterinariaViewSet)
 router.register('eventos', EventoMascotaViewSet, basename='evento')
 router.register('recorridos', RecorridoMascotaViewSet, basename='recorrido')
+router.register('direcciones', DireccionViewSet, basename='direccion')
+router.register('horarios-no-disponibles', HorarioNoDisponibleViewSet, basename='horario')
+router.register('control-fisico', ControlFisicoViewSet, basename='control_fisico')
+router.register('historial-servicios', HistorialServicioViewSet, basename='historial_servicio')
+router.register('paseos-programados', PaseoProgramadoViewSet, basename='paseo_programado')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -72,4 +78,6 @@ urlpatterns = [
     path('chats/crear/', CrearChatView.as_view(), name='crear_chat'),              # POST
     path('chats/<int:chat_id>/mensajes/', MensajesPorChatView.as_view(), name='mensajes_por_chat'),  # GET
     path('chats/<int:chat_id>/mensajes/enviar/', EnviarMensajeView.as_view(), name='enviar_mensaje'),  # POST
+
+
 ]

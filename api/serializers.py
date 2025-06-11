@@ -93,3 +93,42 @@ class RecorridoMascotaSerializer(serializers.ModelSerializer):
         model = RecorridoMascota
         fields = ['id', 'mascota', 'distancia_metros', 'duracion_minutos', 'fecha', 'notas', 'nombre_mascota']
 
+class DireccionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Direccion
+        fields = '__all__'
+        read_only_fields = ('usuario', 'creado_en')
+
+
+class HorarioNoDisponibleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = HorarioNoDisponible
+        fields = '__all__'
+        read_only_fields = ('veterinario',)
+
+
+class ControlFisicoSerializer(serializers.ModelSerializer):
+    nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)
+
+    class Meta:
+        model  = ControlFisico
+        fields = ['id', 'mascota', 'fecha', 'peso', 'talla', 'nombre_mascota']
+
+
+class HistorialServicioSerializer(serializers.ModelSerializer):
+    nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)
+    nombre_cuidador = serializers.CharField(source='cuidador.username', read_only=True)
+
+    class Meta:
+        model  = HistorialServicio
+        fields = ['id', 'mascota', 'cuidador', 'tipo', 'comentario', 'fecha',
+                  'nombre_mascota', 'nombre_cuidador']
+
+
+class PaseoProgramadoSerializer(serializers.ModelSerializer):
+    nombre_mascota = serializers.CharField(source='mascota.nombre', read_only=True)
+
+    class Meta:
+        model  = PaseoProgramado
+        fields = ['id', 'mascota', 'nombre', 'latitudes', 'longitudes', 'creado_en',
+                  'nombre_mascota']
